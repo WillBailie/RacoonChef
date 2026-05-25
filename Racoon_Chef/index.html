@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Raccoon Chef · Trash Panda Special</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', 'Segoe UI', monospace;
+            background: #0f120a;
+            background-image: radial-gradient(circle at 10% 30%, rgba(40, 50, 20, 0.4) 2%, transparent 2.5%);
+            background-size: 28px 28px;
+            min-height: 100vh;
+            padding: 1.5rem;
+            color: #e0e2b0;
+        }
+
+        .container {
+            max-width: 750px;
+            margin: 0 auto;
+        }
+
+        /* trash card */
+        .trash-card {
+            background: #1e2218;
+            border-radius: 2rem 2rem 1.5rem 1.5rem;
+            padding: 1.8rem;
+            box-shadow: inset 0 0 0 1px #5a6b32, 0 15px 25px rgba(0,0,0,0.6);
+            border: 1px solid #6a703a;
+            position: relative;
+            transition: all 0.1s ease;
+        }
+
+        .trash-card::before {
+            content: "💀";
+            position: absolute;
+            bottom: 5px;
+            left: 15px;
+            font-size: 2rem;
+            opacity: 0.15;
+            pointer-events: none;
+            transform: rotate(-15deg);
+        }
+
+        .trash-card::after {
+            content: "🗑️";
+            position: absolute;
+            top: -10px;
+            right: 20px;
+            font-size: 2.8rem;
+            opacity: 0.2;
+            pointer-events: none;
+            transform: rotate(12deg);
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            flex-wrap: wrap;
+            margin-bottom: 0.3rem;
+            border-bottom: 2px dashed #5f6a3a;
+            padding-bottom: 0.5rem;
+        }
+
+        h1 {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            font-size: 1.9rem;
+            font-weight: 700;
+            color: #dde0a0;
+            letter-spacing: -1px;
+        }
+
+        .sub {
+            font-size: 0.7rem;
+            color: #b6be7a;
+            margin-bottom: 1.5rem;
+            font-style: italic;
+        }
+
+        /* fridge panel */
+        .fridge-panel {
+            background: #161c10;
+            border-radius: 1.2rem;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid #54602c;
+        }
+
+        .panel-title {
+            font-weight: bold;
+            margin-bottom: 0.8rem;
+            display: flex;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: #cbd88c;
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.6rem;
+            margin-bottom: 1rem;
+            min-height: 2.8rem;
+        }
+
+        .tag {
+            background: #2d3420;
+            padding: 0.3rem 0.8rem;
+            border-radius: 30px;
+            font-size: 0.8rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            border: 1px solid #7d8940;
+            font-family: monospace;
+        }
+
+        .tag button {
+            background: none;
+            border: none;
+            color: #daa87a;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1rem;
+        }
+
+        .add-ingredient {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .add-ingredient input {
+            flex: 2;
+            background: #202618;
+            border: 1px solid #6c7840;
+            padding: 0.5rem 0.8rem;
+            border-radius: 40px;
+            color: #f0f2d0;
+            font-family: monospace;
+            font-size: 0.8rem;
+        }
+
+        .add-ingredient button {
+            background: #4a5a2e;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 40px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            font-family: monospace;
+        }
+
+        /* button group */
+        .button-group {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .trash-btn {
+            flex: 1;
+            background: #514a30;
+            border: 1px solid #8c9a50;
+            padding: 0.8rem;
+            font-size: 1rem;
+            font-weight: bold;
+            font-family: 'Courier New', monospace;
+            color: #fcf5cf;
+            border-radius: 60px;
+            cursor: pointer;
+            transition: 0.08s linear;
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            box-shadow: 0 3px 0 #2e2a1a;
+        }
+
+        .trash-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 1px 0 #2e2a1a;
+        }
+
+        .offline {
+            background: #3d4628;
+        }
+
+        .online {
+            background: #2c3d24;
+            border-color: #b5c86a;
+        }
+
+        /* result area */
+        .result-area {
+            background: #13180e;
+            border-radius: 1.5rem;
+            padding: 1.3rem;
+            border-left: 6px solid #8baa4a;
+            margin-top: 0.2rem;
+        }
+
+        .recipe-title {
+            font-size: 1.4rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            align-items: baseline;
+        }
+
+        .badge {
+            background: #5f6b36;
+            padding: 0.2rem 0.6rem;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            color: #fbffc4;
+        }
+
+        .used-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+            margin: 0.8rem 0;
+        }
+
+        .used-list span {
+            background: #2c3620;
+            padding: 0.15rem 0.6rem;
+            border-radius: 20px;
+            font-size: 0.7rem;
+        }
+
+        .steps {
+            line-height: 1.5;
+            font-size: 0.85rem;
+            color: #d2e0a8;
+            margin-top: 0.5rem;
+        }
+
+        .missing-note {
+            background: #2c281a;
+            display: inline-block;
+            padding: 0.2rem 0.6rem;
+            border-radius: 20px;
+            font-size: 0.65rem;
+            margin-top: 0.6rem;
+            color: #ebc488;
+        }
+
+        hr {
+            border-color: #43502a;
+            margin: 0.8rem 0;
+        }
+
+        .footnote {
+            font-size: 0.6rem;
+            text-align: center;
+            margin-top: 1rem;
+            color: #8d9a60;
+        }
+
+        .empty-message {
+            text-align: center;
+            padding: 1rem;
+            color: #adbc78;
+        }
+
+        img.meal-img {
+            max-width: 100%;
+            border-radius: 1rem;
+            margin: 0.5rem 0;
+            border: 1px solid #6e8640;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="trash-card">
+        <div class="header">
+            <h1>
+                <span>🦝🗑️</span> RACCOON CHEF
+            </h1>
+        </div>
+        <div class="sub">dumpster diving · classic scraps + internet trash</div>
+
+        <!-- ingredients -->
+        <div class="fridge-panel">
+            <div class="panel-title">🥫 MY TRASH FRIDGE</div>
+            <div class="tags" id="ingredientsList"></div>
+            <div class="add-ingredient">
+                <input type="text" id="newIngredient" placeholder="e.g. potato, sausage, cabbage...">
+                <button id="addBtn">➕ ADD SCRAP</button>
+            </div>
+            <div style="font-size:0.65rem; margin-top:8px;">🦝 tip: use english names (potato, fish, onion)</div>
+        </div>
+
+        <!-- two buttons: offline classic / online search -->
+        <div class="button-group">
+            <button class="trash-btn offline" id="localBtn">🦝 CALL RACCOON (OFFLINE)</button>
+            <button class="trash-btn online" id="onlineBtn">🌐 RACCOON GOES ONLINE</button>
+        </div>
+
+        <!-- result panel -->
+        <div class="result-area" id="resultBox">
+            <div class="empty-message">🗑️ click a button — raccoon will steal a recipe for you</div>
+        </div>
+        <div class="footnote">🦝 offline mode = classic pairings &nbsp;|&nbsp; 🌐 online = TheMealDB (needs live server)</div>
+    </div>
+</div>
+
+<script>
+    // ---------- LOCAL CLASSIC RECIPES (offline) ----------
+    const CLASSIC_RECIPES = [
+        { required: ["sausage", "potato", "carrot"], optional: ["onion"], name: "🍲 Sausage, Potato & Carrot Rice", cook: "1. Slice sausage, dice potato & carrot; 2. Sauté sausage, add onion, potato, carrot; 3. Add rice & water, cook; 4. Mix well." },
+        { required: ["sausage", "potato"], optional: ["onion", "carrot"], name: "🥘 Speedy Sausage & Potato Rice", cook: "1. Chop sausage, potato, onion; 2. Fry onion & sausage, add potato; 3. Add water, soy sauce, sugar; 4. Mix with cooked rice." },
+        { required: ["frozen fish", "cabbage"], optional: [], name: "🐟 Pan-fried Fish + Tangy Cabbage", cook: "1. Thaw fish, pat dry, marinate with salt & pepper, fry golden; 2. Sauté cabbage with garlic, vinegar, soy sauce; 3. Serve with rice." },
+        { required: ["sausage", "potato", "onion"], optional: ["carrot"], name: "🥔 German Sausage & Potato Soup", cook: "1. Slice sausage, dice potato, chop onion; 2. Sauté, add water, boil 15 min; 3. Season with salt & pepper." },
+        { required: ["potato", "carrot", "onion"], optional: ["sausage"], name: "🍛 Curry-ish Veg Stew", cook: "1. Sauté onion, add potato, carrot, sausage; 2. Add water, simmer 10 min; 3. Season with soy sauce & ketchup." },
+        { required: ["cabbage", "sausage", "potato"], optional: [], name: "🥬 Cabbage Sausage + Mashed Potato", cook: "1. Steam & mash potato; 2. Fry sausage, add cabbage, salt, water; 3. Serve with mash." },
+        { required: ["onion", "potato", "carrot", "sausage"], optional: [], name: "🧅 One-Pot Trash Stew", cook: "1. Chop everything; 2. Brown sausage, add onion, potato, carrot; 3. Add water, soy sauce, simmer 15 min." },
+        { required: ["frozen fish", "cabbage", "onion"], optional: ["potato"], name: "🐟 Fish & Cabbage Hot Pot", cook: "1. Pan-fry fish; 2. Sauté onion & cabbage, add water & potato; 3. Add fish, simmer 5 min, salt & pepper." },
+        { required: ["sausage", "potato"], optional: ["onion"], name: "🥔 Sausage & Potato Pancake", cook: "1. Grate potato, dice sausage & onion; 2. Mix with salt, flour (or egg); 3. Pan-fry until crispy." },
+        { required: ["frozen fish", "carrot", "onion"], optional: [], name: "🥕 Stir-fried Fish with Carrot & Onion", cook: "1. Cook fish, set aside; 2. Sauté carrot & onion; 3. Return fish, add soy sauce & sugar." }
+    ];
+
+    // current ingredients (all lower case)
+    let ingredients = ["cabbage", "onion", "potato", "carrot", "frozen fish", "sausage"];
+
+    // DOM elements
+    const ingredientsDiv = document.getElementById("ingredientsList");
+    const newInput = document.getElementById("newIngredient");
+    const addBtn = document.getElementById("addBtn");
+    const localBtn = document.getElementById("localBtn");
+    const onlineBtn = document.getElementById("onlineBtn");
+    const resultBox = document.getElementById("resultBox");
+
+    // Helper: render ingredient tags
+    function renderIngredients() {
+        ingredientsDiv.innerHTML = "";
+        if (ingredients.length === 0) {
+            const emptyMsg = document.createElement("div");
+            emptyMsg.className = "tags";
+            emptyMsg.style.width = "100%";
+            emptyMsg.style.color = "#9aa86a";
+            emptyMsg.innerText = "🍂 fridge is empty... add some scraps!";
+            ingredientsDiv.appendChild(emptyMsg);
+            return;
+        }
+        ingredients.forEach((ing, idx) => {
+            const tag = document.createElement("div");
+            tag.className = "tag";
+            tag.innerHTML = `${ing} <button data-idx="${idx}">✕</button>`;
+            ingredientsDiv.appendChild(tag);
+        });
+        document.querySelectorAll(".tag button").forEach(btn => {
+            btn.addEventListener("click", (e) => {
+                const idx = parseInt(btn.getAttribute("data-idx"));
+                if (!isNaN(idx)) {
+                    ingredients.splice(idx, 1);
+                    renderIngredients();
+                }
+                e.stopPropagation();
+            });
+        });
+    }
+
+    // add ingredient (lowercase)
+    function addIngredient() {
+        let raw = newInput.value.trim().toLowerCase();
+        if (!raw) return;
+        if (!ingredients.includes(raw)) {
+            ingredients.push(raw);
+            renderIngredients();
+            newInput.value = "";
+        } else {
+            alert(`"${raw}" is already rotting in the fridge!`);
+            newInput.value = "";
+        }
+    }
+
+    // ---------- OFFLINE MODE (classic matching) ----------
+    function getBestClassicRecipe() {
+        if (ingredients.length === 0) return null;
+        let best = null;
+        let bestScore = -1;
+        for (let recipe of CLASSIC_RECIPES) {
+            let requiredMatch = 0;
+            let missing = [];
+            for (let req of recipe.required) {
+                if (ingredients.includes(req)) requiredMatch++;
+                else missing.push(req);
+            }
+            if (requiredMatch === 0) continue;
+            let optionalBonus = 0;
+            if (recipe.optional) {
+                for (let opt of recipe.optional) {
+                    if (ingredients.includes(opt)) optionalBonus += 0.4;
+                }
+            }
+            if (missing.length > 1 && requiredMatch === 1 && recipe.required.length >= 3) continue;
+            let score = requiredMatch + optionalBonus;
+            if (requiredMatch === recipe.required.length) score += 10;
+            if (score > bestScore) {
+                bestScore = score;
+                best = { ...recipe, missing };
+            }
+        }
+        return best;
+    }
+
+    function showOfflineRecommendation() {
+        if (ingredients.length === 0) {
+            resultBox.innerHTML = `<div class="empty-message">🦝 fridge empty! add some scraps first.</div>`;
+            return;
+        }
+        const recipe = getBestClassicRecipe();
+        if (!recipe) {
+            resultBox.innerHTML = `<div class="empty-message">😭 no classic match found. try "potato + sausage" or "fish + cabbage"</div>`;
+            return;
+        }
+        const used = [...recipe.required];
+        if (recipe.optional) {
+            recipe.optional.forEach(opt => {
+                if (ingredients.includes(opt) && !used.includes(opt)) used.push(opt);
+            });
+        }
+        let missingHtml = "";
+        if (recipe.missing && recipe.missing.length) {
+            missingHtml = `<div class="missing-note">⚠️ missing: ${recipe.missing.join(', ')} — substitute or ignore</div>`;
+        }
+        resultBox.innerHTML = `
+            <div class="recipe-title">
+                <span class="badge">🦝 OFFLINE FIND</span> ${recipe.name}
+            </div>
+            <div class="used-list">${used.map(i => `<span>🥫 ${i}</span>`).join('')}</div>
+            <div class="steps">📖 ${recipe.cook}</div>
+            ${missingHtml}
+            <hr><div class="footnote" style="margin-top:0.5rem;">✨ raccoon classic database</div>
+        `;
+    }
+
+    // ---------- ONLINE MODE (TheMealDB) ----------
+    async function searchOnline() {
+        if (ingredients.length === 0) {
+            resultBox.innerHTML = `<div class="empty-message">🌐 fridge empty, nothing to search online.</div>`;
+            return;
+        }
+        let query = ingredients.join(",");
+        resultBox.innerHTML = `<div class="empty-message">🌐 raccoon is digging the internet for "${query}" ...</div>`;
+        try {
+            // Step 1: filter by ingredient (any of them)
+            const searchUrl = `https://www.themealdb.com/api/json/v1/1/filter.php?i=${encodeURIComponent(query)}`;
+            const res = await fetch(searchUrl);
+            const data = await res.json();
+            if (!data.meals || data.meals.length === 0) {
+                resultBox.innerHTML = `<div class="empty-message">😭 no online recipe found for "${query}".<br>try simpler ingredients or use offline mode.</div>`;
+                return;
+            }
+            // pick first result
+            const first = data.meals[0];
+            const detailUrl = `https://www.themealdb.com/api/json/v1/1/lookup.php?i=${first.idMeal}`;
+            const detailRes = await fetch(detailUrl);
+            const detailData = await detailRes.json();
+            const meal = detailData.meals[0];
+            const instructions = meal.strInstructions ? (meal.strInstructions.length > 600 ? meal.strInstructions.substring(0, 600) + "..." : meal.strInstructions) : "No instructions.";
+            resultBox.innerHTML = `
+                <div class="recipe-title">
+                    <span class="badge">🌐 ONLINE SCRAP</span> ${meal.strMeal}
+                </div>
+                ${meal.strMealThumb ? `<img class="meal-img" src="${meal.strMealThumb}" alt="recipe image">` : ""}
+                <div class="steps">📖 ${instructions}</div>
+                <hr>
+                <div class="footnote" style="margin-top:0.5rem;">🦝 fetched from TheMealDB · may not match all your scraps</div>
+            `;
+        } catch (err) {
+            console.error(err);
+            resultBox.innerHTML = `<div class="empty-message">❌ internet fail: ${err.message}<br>📌 Tip: use Live Server or upload to Netlify (double-click won't work for online)</div>`;
+        }
+    }
+
+    // event binding
+    addBtn.addEventListener("click", addIngredient);
+    newInput.addEventListener("keypress", (e) => { if (e.key === "Enter") addIngredient(); });
+    localBtn.addEventListener("click", showOfflineRecommendation);
+    onlineBtn.addEventListener("click", searchOnline);
+
+    // initial render
+    renderIngredients();
+    showOfflineRecommendation();  // show something by default
+</script>
+</body>
+</html>
