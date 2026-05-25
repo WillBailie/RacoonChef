@@ -392,10 +392,16 @@
 
     function getDeviceId() {
         let id = localStorage.getItem(DEVICE_KEY);
-        if (!id) {
-            id = crypto.randomUUID();
+        if (id) return id;
+        id = document.cookie.split('; ').find(r => r.startsWith(DEVICE_KEY + '='));
+        if (id) {
+            id = decodeURIComponent(id.split('=')[1]);
             localStorage.setItem(DEVICE_KEY, id);
+            return id;
         }
+        id = crypto.randomUUID();
+        localStorage.setItem(DEVICE_KEY, id);
+        document.cookie = `${DEVICE_KEY}=${id};path=/;max-age=${60 * 60 * 24 * 365};SameSite=Lax`;
         return id;
     }
     const DEVICE_ID = getDeviceId();
