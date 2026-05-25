@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Raccoon Chef · My Recipes</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="container">
+    <div class="trash-card">
+        <div class="header">
+            <h1><span>📝🗑️</span> MY RECIPES</h1>
+        </div>
+        <div class="sub">add your own scrappy creations</div>
+
+        <a class="nav-link" href="index.html">⬅ back to fridge</a>
+
+        <div class="fridge-panel" id="formPanel" style="display:none;">
+            <div class="panel-title">🥘 NEW RECIPE</div>
+            <div class="recipe-form">
+                <label>Recipe Name</label>
+                <input type="text" id="recipeName" placeholder="e.g. 🍳 Trash Omelette">
+                <label>Required ingredients (comma separated)</label>
+                <input type="text" id="recipeRequired" placeholder="e.g. egg, onion, potato">
+                <label>Optional ingredients (comma separated)</label>
+                <input type="text" id="recipeOptional" placeholder="e.g. cheese, sausage">
+                <label>Instructions</label>
+                <textarea id="recipeCook" placeholder="1. Chop everything; 2. Cook; 3. Eat like a raccoon"></textarea>
+                <div class="form-buttons">
+                    <button class="form-btn save" id="saveRecipeBtn">💾 SAVE SCRAP</button>
+                    <button class="form-btn delete" id="cancelFormBtn">✕ CANCEL</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="button-group">
+            <button class="trash-btn online" id="showFormBtn">➕ ADD RECIPE</button>
+        </div>
+
+        <div class="panel-title" style="margin-bottom:0.5rem;">📋 YOUR CUSTOM RECIPES</div>
+        <div id="customRecipeList">
+            <div class="empty-message">🗑️ no custom recipes yet — add one!</div>
+        </div>
+
+        <hr>
+        <div class="footnote">🦝 custom recipes saved in your browser's localStorage</div>
+    </div>
+</div>
+
+<script>
+const CUSTOM_RECIPES_KEY = "racoon_chef_custom_recipes";
+
+function getRecipes() {
+    try {
+        const stored = localStorage.getItem(CUSTOM_RECIPES_KEY);
+        if (stored) {
+            const parsed = JSON.parse(stored);
+            if (Array.isArray(parsed)) return parsed;
+        }
+    } catch (_) {}
+    return [];
+}
+
+function saveRecipes(recipes) {
+    localStorage.setItem(CUSTOM_RECIPES_KEY, JSON.stringify(recipes));
+}
+
+function renderRecipeList() {
+    const list = document.getElementById("customRecipeList");
+    const recipes = getRecipes();
+    if (recipes.length === 0) {
+        list.innerHTML = '<div class="empty-message">🗑️ no custom recipes yet — add one!</div>';
+        return;
+    }
+    list.innerHTML = recipes.map((r, i) => `
+        <div class="custom-recipe-card">
+            <div class="custom-recipe-info">
+                <div class="custom-recipe-name">${r.name}</div>
+                <div class="custom-recipe-detail">required: ${r.required.join(', ')} ${r.optional && r.optional.length ? '· optional: ' + r.optional.join(', ') : ''}</div>
+            </div>
+            <button class="form-btn delete" data-idx="${i}">🗑️</button>
+        </div>
+    `).join('');
+    list.querySelectorAll(".form-btn.delete").forEach(btn => {
+        btn.addEventListener("click", () => {
+            const idx = parseInt(btn.getAttribute("data-idx"));
+            const recipes = getRecipes();
+            recipes.splice(idx, 1);
+            saveRecipes(recipes);
+            renderRecipeList();
+        });
+    });
+}
+
+document.getElementById("showFormBtn").addEventListener("click", () => {
+    document.getElementById("formPanel").style.display = "block";
+    document.getElementById("showFormBtn").style.display = "none";
+});
+
+document.getElementById("cancelFormBtn").addEventListener("click", () => {
+    document.getElementById("formPanel").style.display = "none";
+    document.getElementById("showFormBtn").style.display = "flex";
+    document.getElementById("recipeName").value = "";
+    document.getElementById("recipeRequired").value = "";
+    document.getElementById("recipeOptional").value = "";
+    document.getElementById("recipeCook").value = "";
+});
+
+document.getElementById("saveRecipeBtn").addEventListener("click", () => {
+    const name = document.getElementById("recipeName").value.trim();
+    const required = document.getElementById("recipeRequired").value.split(",").map(s => s.trim().toLowerCase()).filter(Boolean);
+    const optional = document.getElementById("recipeOptional").value.split(",").map(s => s.trim().toLowerCase()).filter(Boolean);
+    const cook = document.getElementById("recipeCook").value.trim();
+    if (!name || required.length === 0 || !cook) {
+        alert("Fill in name, required ingredients, and instructions!");
+        return;
+    }
+    const recipes = getRecipes();
+    recipes.push({ name, required, optional, cook });
+    saveRecipes(recipes);
+    renderRecipeList();
+    document.getElementById("cancelFormBtn").click();
+});
+
+renderRecipeList();
+</script>
+</body>
+</html>

@@ -2,6 +2,7 @@
 const SUPABASE_URL = "https://bvldhsszthnlnmzfmsrp.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_DUZhP1FQedSI-mM4bAAsGw_OIfPGGlQ";
 const STORAGE_KEY = "racoon_chef_fridge";
+const CUSTOM_RECIPES_KEY = "racoon_chef_custom_recipes";
 const DEVICE_KEY = "racoon_device_id";
 
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -95,6 +96,18 @@ const CLASSIC_RECIPES = [
     { required: ["frozen fish", "carrot", "onion"], optional: [], name: "🥕 Stir-fried Fish with Carrot & Onion", cook: "1. Cook fish, set aside; 2. Sauté carrot & onion; 3. Return fish, add soy sauce & sugar." }
 ];
 
+// ---------- CUSTOM RECIPES ----------
+function getCustomRecipes() {
+    try {
+        const stored = localStorage.getItem(CUSTOM_RECIPES_KEY);
+        if (stored) {
+            const parsed = JSON.parse(stored);
+            if (Array.isArray(parsed)) return parsed;
+        }
+    } catch (_) {}
+    return [];
+}
+
 // current ingredients (all lower case)
 let ingredients = [];
 
@@ -157,7 +170,7 @@ function getBestClassicRecipe() {
     if (ingredients.length === 0) return null;
     let best = null;
     let bestScore = -1;
-    for (let recipe of CLASSIC_RECIPES) {
+    for (let recipe of [...CLASSIC_RECIPES, ...getCustomRecipes()]) {
         let requiredMatch = 0;
         let missing = [];
         for (let req of recipe.required) {

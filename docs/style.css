@@ -336,3 +336,96 @@ img.meal-img {
     margin: 0.5rem 0;
     border: 1px solid #6e8640;
 }
+
+/* nav link */
+.nav-link {
+    display: inline-block;
+    color: #b6be7a;
+    text-decoration: none;
+    font-size: 0.75rem;
+    margin-bottom: 1rem;
+    padding: 0.3rem 0.8rem;
+    border: 1px solid #54602c;
+    border-radius: 30px;
+    transition: 0.1s;
+}
+.nav-link:hover {
+    background: #2d3420;
+    color: #dde0a0;
+}
+
+/* recipe form */
+.recipe-form {
+    margin-bottom: 1.5rem;
+}
+.recipe-form label {
+    display: block;
+    margin-bottom: 0.3rem;
+    font-size: 0.8rem;
+    color: #cbd88c;
+}
+.recipe-form input,
+.recipe-form textarea {
+    width: 100%;
+    background: #202618;
+    border: 1px solid #6c7840;
+    padding: 0.5rem 0.8rem;
+    border-radius: 10px;
+    color: #f0f2d0;
+    font-family: monospace;
+    font-size: 0.8rem;
+    margin-bottom: 1rem;
+}
+.recipe-form textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+.recipe-form .form-buttons {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+.form-btn {
+    padding: 0.4rem 1rem;
+    border-radius: 30px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.8rem;
+    font-weight: bold;
+    cursor: pointer;
+    border: none;
+}
+.form-btn.save {
+    background: #4a5a2e;
+    color: white;
+}
+.form-btn.delete {
+    background: #5a2e2e;
+    color: #ffcccc;
+}
+
+/* custom recipe list */
+.custom-recipe-card {
+    background: #1a1e14;
+    border: 1px solid #43502a;
+    border-radius: 1rem;
+    padding: 0.8rem 1rem;
+    margin-bottom: 0.6rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.5rem;
+}
+.custom-recipe-info {
+    flex: 1;
+    min-width: 0;
+}
+.custom-recipe-name {
+    font-size: 0.85rem;
+    color: #dde0a0;
+    font-weight: bold;
+}
+.custom-recipe-detail {
+    font-size: 0.65rem;
+    color: #8d9a60;
+    margin-top: 0.2rem;
+}
