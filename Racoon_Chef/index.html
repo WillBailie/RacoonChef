@@ -337,8 +337,24 @@
         { required: ["frozen fish", "carrot", "onion"], optional: [], name: "🥕 Stir-fried Fish with Carrot & Onion", cook: "1. Cook fish, set aside; 2. Sauté carrot & onion; 3. Return fish, add soy sauce & sugar." }
     ];
 
-    // current ingredients (all lower case)
-    let ingredients = ["cabbage", "onion", "potato", "carrot", "frozen fish", "sausage"];
+    const STORAGE_KEY = "racoon_chef_fridge";
+
+    function loadIngredients() {
+        try {
+            const stored = localStorage.getItem(STORAGE_KEY);
+            if (stored) {
+                const parsed = JSON.parse(stored);
+                if (Array.isArray(parsed)) return parsed;
+            }
+        } catch (_) {}
+        return ["cabbage", "onion", "potato", "carrot", "frozen fish", "sausage"];
+    }
+
+    function saveIngredients() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(ingredients));
+    }
+
+    let ingredients = loadIngredients();
 
     // DOM elements
     const ingredientsDiv = document.getElementById("ingredientsList");
@@ -371,6 +387,7 @@
                 const idx = parseInt(btn.getAttribute("data-idx"));
                 if (!isNaN(idx)) {
                     ingredients.splice(idx, 1);
+                    saveIngredients();
                     renderIngredients();
                 }
                 e.stopPropagation();
@@ -384,6 +401,7 @@
         if (!raw) return;
         if (!ingredients.includes(raw)) {
             ingredients.push(raw);
+            saveIngredients();
             renderIngredients();
             newInput.value = "";
         } else {
