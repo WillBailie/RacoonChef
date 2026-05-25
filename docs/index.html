@@ -445,9 +445,11 @@
     }
 
     function formatInstructions(text) {
-        const steps = text.match(/[^.;]+[.;]?/g).filter(s => s.trim());
+        let steps = text.split(/\r\n\s*\r\n/).filter(s => s.trim());
+        if (steps.length <= 1) steps = text.split(/\r\n/).filter(s => s.trim());
+        if (steps.length <= 1) steps = text.split(/\.\s+(?=[A-Z])/).filter(s => s.trim());
         if (steps.length <= 1) return `<p>${text}</p>`;
-        return `<ol class="step-list">${steps.map(s => `<li>${s.trim()}</li>`).join('')}</ol>`;
+        return `<ol class="step-list">${steps.map(s => `<li>${s.trim()}${!s.trim().endsWith('.') ? '.' : ''}</li>`).join('')}</ol>`;
     }
 
     function switchTab(e, name) {
@@ -619,7 +621,7 @@
             const detailRes = await fetch(detailUrl);
             const detailData = await detailRes.json();
             const meal = detailData.meals[0];
-            const instructions = meal.strInstructions ? (meal.strInstructions.length > 600 ? meal.strInstructions.substring(0, 600) + "..." : meal.strInstructions) : "No instructions.";
+            const instructions = meal.strInstructions || "No instructions.";
             const mealIngredients = extractIngredients(meal);
             const ingredientsHtml = mealIngredients.length > 0
                 ? `<ul class="ingredient-list">${mealIngredients.map(i => `<li>${i.measure ? `<span class="measure">${i.measure}</span> ` : ''}${i.name}</li>`).join('')}</ul>`
