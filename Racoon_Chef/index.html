@@ -620,9 +620,9 @@
             const detailData = await detailRes.json();
             const meal = detailData.meals[0];
             const instructions = meal.strInstructions ? (meal.strInstructions.length > 600 ? meal.strInstructions.substring(0, 600) + "..." : meal.strInstructions) : "No instructions.";
-            const ingredients = extractIngredients(meal);
-            const ingredientsHtml = ingredients.length > 0
-                ? `<ul class="ingredient-list">${ingredients.map(i => `<li>${i.measure ? `<span class="measure">${i.measure}</span> ` : ''}${i.name}</li>`).join('')}</ul>`
+            const mealIngredients = extractIngredients(meal);
+            const ingredientsHtml = mealIngredients.length > 0
+                ? `<ul class="ingredient-list">${mealIngredients.map(i => `<li>${i.measure ? `<span class="measure">${i.measure}</span> ` : ''}${i.name}</li>`).join('')}</ul>`
                 : `<p>No ingredient list available.</p>`;
             resultBox.innerHTML = `
                 <div class="recipe-title">
