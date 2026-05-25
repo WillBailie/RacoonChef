@@ -511,19 +511,26 @@
             resultBox.innerHTML = `<div class="empty-message">🌐 fridge empty, nothing to search online.</div>`;
             return;
         }
-        let query = ingredients.join(",");
-        resultBox.innerHTML = `<div class="empty-message">🌐 raccoon is digging the internet for "${query}" ...</div>`;
+        resultBox.innerHTML = `<div class="empty-message">🌐 raccoon is digging the internet...</div>`;
         try {
-            // Step 1: filter by ingredient (any of them)
-            const searchUrl = `https://www.themealdb.com/api/json/v1/1/filter.php?i=${encodeURIComponent(query)}`;
-            const res = await fetch(searchUrl);
-            const data = await res.json();
-            if (!data.meals || data.meals.length === 0) {
-                resultBox.innerHTML = `<div class="empty-message">😭 no online recipe found for "${query}".<br>try simpler ingredients or use offline mode.</div>`;
+            let allMeals = [];
+            for (const ing of ingredients) {
+                const searchUrl = `https://www.themealdb.com/api/json/v1/1/filter.php?i=${encodeURIComponent(ing)}`;
+                const res = await fetch(searchUrl);
+                const data = await res.json();
+                if (data.meals) allMeals.push(...data.meals);
+            }
+            const seen = new Set();
+            const uniqueMeals = allMeals.filter(m => {
+                if (seen.has(m.idMeal)) return false;
+                seen.add(m.idMeal);
+                return true;
+            });
+            if (uniqueMeals.length === 0) {
+                resultBox.innerHTML = `<div class="empty-message">😭 no online recipe found.<br>try simpler ingredients or use offline mode.</div>`;
                 return;
             }
-            // pick first result
-            const first = data.meals[0];
+            const first = uniqueMeals[Math.floor(Math.random() * uniqueMeals.length)];
             const detailUrl = `https://www.themealdb.com/api/json/v1/1/lookup.php?i=${first.idMeal}`;
             const detailRes = await fetch(detailUrl);
             const detailData = await detailRes.json();
@@ -536,11 +543,11 @@
                 ${meal.strMealThumb ? `<img class="meal-img" src="${meal.strMealThumb}" alt="recipe image">` : ""}
                 <div class="steps">📖 ${instructions}</div>
                 <hr>
-                <div class="footnote" style="margin-top:0.5rem;">🦝 fetched from TheMealDB · may not match all your scraps</div>
+                <div class="footnote" style="margin-top:0.5rem;">🦝 fetched from TheMealDB · found ${uniqueMeals.length} recipe(s) across your scraps</div>
             `;
         } catch (err) {
             console.error(err);
-            resultBox.innerHTML = `<div class="empty-message">❌ internet fail: ${err.message}<br>📌 Tip: use Live Server or upload to Netlify (double-click won't work for online)</div>`;
+            resultBox.innerHTML = `<div class="empty-message">❌ internet fail: ${err.message}</div>`;
         }
     }
 
