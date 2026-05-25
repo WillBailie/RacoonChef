@@ -251,6 +251,64 @@
             margin-top: 0.5rem;
         }
 
+        /* tabs */
+        .recipe-tabs {
+            display: flex;
+            gap: 0;
+            margin: 0.8rem 0 0 0;
+            border-bottom: 2px solid #43502a;
+        }
+        .recipe-tab-btn {
+            background: none;
+            border: none;
+            color: #7d8940;
+            padding: 0.4rem 0.9rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.75rem;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -2px;
+            transition: 0.1s;
+        }
+        .recipe-tab-btn.active {
+            color: #dde0a0;
+            border-bottom-color: #8baa4a;
+        }
+        .recipe-tab-btn:hover {
+            color: #b5c86a;
+        }
+        .tab-panel {
+            display: none;
+            padding: 0.7rem 0;
+        }
+        .tab-panel.active {
+            display: block;
+        }
+        .ingredient-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .ingredient-list li {
+            padding: 0.25rem 0;
+            font-size: 0.85rem;
+            color: #d2e0a8;
+            border-bottom: 1px dotted #3a4426;
+        }
+        .measure {
+            color: #a0a870;
+        }
+        .step-list {
+            padding-left: 1.3rem;
+            margin: 0.3rem 0;
+            font-size: 0.85rem;
+            color: #d2e0a8;
+        }
+        .step-list li {
+            margin-bottom: 0.5rem;
+            line-height: 1.5;
+        }
+
         .missing-note {
             background: #2c281a;
             display: inline-block;
@@ -371,6 +429,32 @@
                 .from("user_fridge")
                 .upsert({ device_id: DEVICE_ID, ingredients, updated_at: new Date().toISOString() });
         } catch (_) {}
+    }
+
+    // ---------- HELPERS ----------
+    function extractIngredients(meal) {
+        const items = [];
+        for (let i = 1; i <= 20; i++) {
+            const ing = meal[`strIngredient${i}`];
+            const measure = meal[`strMeasure${i}`];
+            if (ing && ing.trim()) {
+                items.push({ name: ing.trim(), measure: measure ? measure.trim() : '' });
+            }
+        }
+        return items;
+    }
+
+    function formatInstructions(text) {
+        const steps = text.match(/[^.;]+[.;]?/g).filter(s => s.trim());
+        if (steps.length <= 1) return `<p>${text}</p>`;
+        return `<ol class="step-list">${steps.map(s => `<li>${s.trim()}</li>`).join('')}</ol>`;
+    }
+
+    function switchTab(e, name) {
+        document.querySelectorAll(".recipe-tab-btn").forEach(b => b.classList.remove("active"));
+        e.target.classList.add("active");
+        document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
+        document.getElementById(`tab-${name}`).classList.add("active");
     }
 
     // ---------- LOCAL CLASSIC RECIPES (offline) ----------
@@ -536,12 +620,23 @@
             const detailData = await detailRes.json();
             const meal = detailData.meals[0];
             const instructions = meal.strInstructions ? (meal.strInstructions.length > 600 ? meal.strInstructions.substring(0, 600) + "..." : meal.strInstructions) : "No instructions.";
+            const ingredients = extractIngredients(meal);
+            const ingredientsHtml = ingredients.length > 0
+                ? `<ul class="ingredient-list">${ingredients.map(i => `<li>${i.measure ? `<span class="measure">${i.measure}</span> ` : ''}${i.name}</li>`).join('')}</ul>`
+                : `<p>No ingredient list available.</p>`;
             resultBox.innerHTML = `
                 <div class="recipe-title">
                     <span class="badge">🌐 ONLINE SCRAP</span> ${meal.strMeal}
                 </div>
                 ${meal.strMealThumb ? `<img class="meal-img" src="${meal.strMealThumb}" alt="recipe image">` : ""}
-                <div class="steps">📖 ${instructions}</div>
+                <div class="recipe-tabs">
+                    <button class="recipe-tab-btn active" onclick="switchTab(event, 'ingredients')">🥫 Ingredients</button>
+                    <button class="recipe-tab-btn" onclick="switchTab(event, 'instructions')">📖 Instructions</button>
+                </div>
+                <div class="tab-content">
+                    <div class="tab-panel active" id="tab-ingredients">${ingredientsHtml}</div>
+                    <div class="tab-panel" id="tab-instructions">${formatInstructions(instructions)}</div>
+                </div>
                 <hr>
                 <div class="footnote" style="margin-top:0.5rem;">🦝 fetched from TheMealDB · found ${uniqueMeals.length} recipe(s) across your scraps</div>
             `;
