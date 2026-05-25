@@ -322,7 +322,57 @@
     </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
+    // ---------- SUPABASE CONFIG ----------
+    const SUPABASE_URL = "https://bvldhsszthnlnmzfmsrp.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable_DUZhP1FQedSI-mM4bAAsGw_OIfPGGlQ";
+    const STORAGE_KEY = "racoon_chef_fridge";
+    const DEVICE_KEY = "racoon_device_id";
+
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    function getDeviceId() {
+        let id = localStorage.getItem(DEVICE_KEY);
+        if (!id) {
+            id = crypto.randomUUID();
+            localStorage.setItem(DEVICE_KEY, id);
+        }
+        return id;
+    }
+    const DEVICE_ID = getDeviceId();
+
+    async function loadIngredients() {
+        try {
+            const { data, error } = await supabaseClient
+                .from("user_fridge")
+                .select("ingredients")
+                .eq("device_id", DEVICE_ID)
+                .single();
+            if (!error && data && Array.isArray(data.ingredients)) {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(data.ingredients));
+                return data.ingredients;
+            }
+        } catch (_) {}
+        try {
+            const stored = localStorage.getItem(STORAGE_KEY);
+            if (stored) {
+                const parsed = JSON.parse(stored);
+                if (Array.isArray(parsed)) return parsed;
+            }
+        } catch (_) {}
+        return ["cabbage", "onion", "potato", "carrot", "frozen fish", "sausage"];
+    }
+
+    async function saveIngredients() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(ingredients));
+        try {
+            await supabaseClient
+                .from("user_fridge")
+                .upsert({ device_id: DEVICE_ID, ingredients, updated_at: new Date().toISOString() });
+        } catch (_) {}
+    }
+
     // ---------- LOCAL CLASSIC RECIPES (offline) ----------
     const CLASSIC_RECIPES = [
         { required: ["sausage", "potato", "carrot"], optional: ["onion"], name: "🍲 Sausage, Potato & Carrot Rice", cook: "1. Slice sausage, dice potato & carrot; 2. Sauté sausage, add onion, potato, carrot; 3. Add rice & water, cook; 4. Mix well." },
@@ -337,24 +387,8 @@
         { required: ["frozen fish", "carrot", "onion"], optional: [], name: "🥕 Stir-fried Fish with Carrot & Onion", cook: "1. Cook fish, set aside; 2. Sauté carrot & onion; 3. Return fish, add soy sauce & sugar." }
     ];
 
-    const STORAGE_KEY = "racoon_chef_fridge";
-
-    function loadIngredients() {
-        try {
-            const stored = localStorage.getItem(STORAGE_KEY);
-            if (stored) {
-                const parsed = JSON.parse(stored);
-                if (Array.isArray(parsed)) return parsed;
-            }
-        } catch (_) {}
-        return ["cabbage", "onion", "potato", "carrot", "frozen fish", "sausage"];
-    }
-
-    function saveIngredients() {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(ingredients));
-    }
-
-    let ingredients = loadIngredients();
+    // current ingredients (all lower case)
+    let ingredients = [];
 
     // DOM elements
     const ingredientsDiv = document.getElementById("ingredientsList");
@@ -517,8 +551,11 @@
     onlineBtn.addEventListener("click", searchOnline);
 
     // initial render
-    renderIngredients();
-    showOfflineRecommendation();  // show something by default
+    (async function init() {
+        ingredients = await loadIngredients();
+        renderIngredients();
+        showOfflineRecommendation();
+    })();
 </script>
 </body>
 </html>
